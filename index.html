@@ -357,12 +357,8 @@
             const input = document.getElementById('nameInput').value;
             names = input.split(/[\n,]+/).map(name => name.trim()).filter(name => name !== '');
             localStorage.setItem('names', JSON.stringify(names));
-            // 清空历史记录和已抽项目，因为名字列表已改变
-            history = [];
+            // 保留历史记录，但重置当前抽取状态
             drawnNumbers = [];
-            round = 1;
-            historyTable.innerHTML = '';
-            localStorage.setItem('history', JSON.stringify(history));
             localStorage.setItem('drawnNumbers', JSON.stringify(drawnNumbers));
             closeNameModal();
         }
@@ -380,12 +376,8 @@
             const input = document.getElementById('excludeInput').value;
             exclude = input.split(/[\n,]+/).map(item => item.trim()).filter(item => item !== '');
             localStorage.setItem('exclude', JSON.stringify(exclude));
-            // 清空历史记录，因为排除列表已改变
-            history = [];
+            // 保留历史记录，但重置当前抽取状态
             drawnNumbers = [];
-            round = 1;
-            historyTable.innerHTML = '';
-            localStorage.setItem('history', JSON.stringify(history));
             localStorage.setItem('drawnNumbers', JSON.stringify(drawnNumbers));
             closeExcludeModal();
         }
@@ -422,13 +414,10 @@
 
         function generateItems() {
             let availableItems = [];
-            let allDrawnItems = new Set();
-            history.forEach(item => {
-                item.numbers.forEach(num => allDrawnItems.add(num));
-            });
+            let allDrawnItems = new Set((drawnNumbers || []).map(item => item.toString()));
             if (mode === 'number') {
                 for (let i = min; i <= max; i++) {
-                    if (!allDrawnItems.has(i) && !exclude.includes(i.toString())) {
+                    if (!allDrawnItems.has(i.toString()) && !exclude.includes(i.toString())) {
                         availableItems.push(i);
                     }
                 }
@@ -509,11 +498,12 @@
             tr.appendChild(tdNumbers);
             historyTable.appendChild(tr);
             history.push({ round: round, numbers: finalNumbers });
+            drawnNumbers = drawnNumbers.concat(finalNumbers.map(item => item.toString()));
             localStorage.setItem('history', JSON.stringify(history));
+            localStorage.setItem('drawnNumbers', JSON.stringify(drawnNumbers));
         }
 
         function saveState() {
-            drawnNumbers = drawnNumbers.concat(finalNumbers);
             localStorage.setItem('drawnNumbers', JSON.stringify(drawnNumbers));
             localStorage.setItem('history', JSON.stringify(history));
             localStorage.setItem('names', JSON.stringify(names));
