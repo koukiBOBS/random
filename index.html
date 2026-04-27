@@ -356,6 +356,14 @@
         function saveNames() {
             const input = document.getElementById('nameInput').value;
             names = input.split(/[\n,]+/).map(name => name.trim()).filter(name => name !== '');
+            localStorage.setItem('names', JSON.stringify(names));
+            // 清空历史记录和已抽项目，因为名字列表已改变
+            history = [];
+            drawnNumbers = [];
+            round = 1;
+            historyTable.innerHTML = '';
+            localStorage.setItem('history', JSON.stringify(history));
+            localStorage.setItem('drawnNumbers', JSON.stringify(drawnNumbers));
             closeNameModal();
         }
 
@@ -371,6 +379,14 @@
         function saveExclude() {
             const input = document.getElementById('excludeInput').value;
             exclude = input.split(/[\n,]+/).map(item => item.trim()).filter(item => item !== '');
+            localStorage.setItem('exclude', JSON.stringify(exclude));
+            // 清空历史记录，因为排除列表已改变
+            history = [];
+            drawnNumbers = [];
+            round = 1;
+            historyTable.innerHTML = '';
+            localStorage.setItem('history', JSON.stringify(history));
+            localStorage.setItem('drawnNumbers', JSON.stringify(drawnNumbers));
             closeExcludeModal();
         }
 
@@ -431,6 +447,10 @@
                 }
             } else {
                 for (let i = 0; i < count; i++) {
+                    if (availableItems.length === 0) {
+                        // 如果没有可用项，重新加载所有项（重置）
+                        availableItems = names.filter(name => !exclude.includes(name));
+                    }
                     let index = Math.floor(Math.random() * availableItems.length);
                     selectedItems.push(availableItems[index]);
                 }
